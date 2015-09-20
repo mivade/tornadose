@@ -1,12 +1,13 @@
 import os
 from setuptools import setup
+from tornadose import __version__
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name="tornadose",
-    version="0.1.0",
+    version=__version__,
     author="Michael V. DePalatis",
     author_email="mike@depalatis.net",
     description="Tornado-sent events",

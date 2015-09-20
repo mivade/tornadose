@@ -50,9 +50,9 @@ class EventSource(RequestHandler):
             self.source = self.source[index]
 
         while not self.finished:
-            if self.source.data != self._last:
+            if self.source.id != self._last:
                 yield self.publish(self.source.data)
-                self._last = self.source.data
+                self._last = self.source.id
             else:
                 yield gen.sleep(self.period)
         self.finish()

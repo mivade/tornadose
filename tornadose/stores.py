@@ -1,5 +1,8 @@
 """Data storage for dynamic updates to clients."""
 
+from uuid import uuid4
+
+
 class DataStore(object):
     """Generic object for producing data to feed to clients.
 
@@ -11,16 +14,18 @@ class DataStore(object):
     instance so that the :class:`EventSource` can listen for
     updates.
 
+    When data is updated, a unique id is generated. This is in order
+    to enable the publisher to update any new data, even if the value
+    is the same as the previous data.
+
     """
     def __init__(self, initial_data=None):
         self._data = initial_data
 
     def set_data(self, new_data):
-        """Convenience function so multiple stores can be updated with list
-        comprehension.
-
-        """
-        self.data = new_data
+        """Update the store with new data."""
+        self._data = new_data
+        self.id = uuid4()
 
     @property
     def data(self):
@@ -28,7 +33,7 @@ class DataStore(object):
 
     @data.setter
     def data(self, new_data):
-        self._data = new_data
+        self.set_data(new_data)
 
 
 class StoreContainer(object):
