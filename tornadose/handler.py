@@ -50,7 +50,7 @@ class EventSource(RequestHandler):
             self.source = self.source[index]
 
         while not self.finished:
-            if self.source.id != self._last:
+            if self.source.id != self._last and self.source.data is not None:
                 yield self.publish(self.source.data)
                 self._last = self.source.id
             else:

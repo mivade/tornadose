@@ -20,7 +20,7 @@ class DataStore(object):
 
     """
     def __init__(self, initial_data=None):
-        self._data = initial_data
+        self.set_data(initial_data)
 
     def set_data(self, new_data):
         """Update the store with new data."""
