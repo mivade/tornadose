@@ -1,11 +1,5 @@
 """Data storage for dynamic updates to clients."""
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-
 class DataStore(object):
     """Generic object for producing data to feed to clients.
 
