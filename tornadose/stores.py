@@ -7,8 +7,8 @@ class DataStore(object):
     -----
     To use this, simply instantiate and update the ``data`` property
     whenever new data is available. When creating a new
-    :class:`views.EventSource` handler, specify the :class:`DataStore`
-    instance so that the :class:`views.EventSource` can listen for
+    :class:`EventSource` handler, specify the :class:`DataStore`
+    instance so that the :class:`EventSource` can listen for
     updates.
 
     """
