@@ -6,8 +6,6 @@ from uuid import uuid4
 class DataStore(object):
     """Generic object for producing data to feed to clients.
 
-    Notes
-    -----
     To use this, simply instantiate and update the ``data`` property
     whenever new data is available. When creating a new
     :class:`EventSource` handler, specify the :class:`DataStore`
