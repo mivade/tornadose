@@ -6,7 +6,7 @@ the Fibonacci sequence to listeners.
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.options import define, options
 from tornado.web import Application, RequestHandler
-from tornadose.handler import EventSource
+from tornadose.handlers import EventSource
 from tornadose.stores import DataStore
 
 html = """

@@ -9,7 +9,7 @@ import random
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.web import Application
 from tornado import log
-from tornadose.handler import EventSource
+from tornadose.handlers import EventSource
 from tornadose.stores import DataStore
 
 log.enable_pretty_logging()
