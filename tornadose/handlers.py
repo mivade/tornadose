@@ -21,7 +21,7 @@ class EventSource(RequestHandler):
         assert isinstance(source, (stores.DataStore, stores.StoreContainer))
         assert isinstance(period, (int, float)) or period is None
         self.source = source
-        self.period = 0.01 or period
+        self.period = period
         self._last = None
         self.finished = False
         self.set_header('content-type', 'text/event-stream')
@@ -56,5 +56,6 @@ class EventSource(RequestHandler):
                 yield self.publish(self.source.data)
                 self._last = self.source.id
             else:
-                yield gen.sleep(self.period)
+                if self.period is not None:
+                    yield gen.sleep(self.period)
         self.finish()
