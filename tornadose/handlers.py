@@ -2,6 +2,8 @@
 
 from tornado import gen
 from tornado.web import RequestHandler, HTTPError
+from tornado.websocket import WebSocketHandler, WebSocketClosedError
+from tornado.queues import Queue
 from tornado.iostream import StreamClosedError
 from tornado.log import access_log
 from . import stores
@@ -59,3 +61,41 @@ class EventSource(RequestHandler):
                 if self.period is not None:
                     yield gen.sleep(self.period)
         self.finish()
+
+
+class WebSocketSubscriber(WebSocketHandler):
+    """A Websocket-based subscription handler to be used with
+    :class:`tornadose.stores.Publisher`.
+
+    """
+    def initialize(self, publisher):
+        self.publisher = publisher
+        self.messages = Queue()
+        self.finished = False
+
+    def open(self):
+        self.publisher.register(self)
+        self.run()
+
+    def on_close(self):
+        self._close()
+
+    def _close(self):
+        self.publisher.deregister(self)
+        self.finished = True
+
+    @gen.coroutine
+    def submit(self, message):
+        yield self.messages.put(message)
+
+    @gen.coroutine
+    def run(self):
+        while not self.finished:
+            message = yield self.messages.get()
+            self.send(message)
+
+    def send(self, message):
+        try:
+            self.write_message(dict(data=message))
+        except WebSocketClosedError:
+            self._close()

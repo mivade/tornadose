@@ -1,6 +1,9 @@
 """Data storage for dynamic updates to clients."""
 
 from uuid import uuid4
+from tornado import gen
+from tornado.web import RequestHandler
+from tornado.queues import Queue
 
 
 class DataStore(object):
@@ -35,7 +38,7 @@ class DataStore(object):
 
 
 class StoreContainer(object):
-    """Class for holding multiple stores."""
+    """Class for holding multiple data stores."""
     def __init__(self, stores=None):
         """Create the container with a list of stores."""
         assert isinstance(stores, (list, tuple)) or stores is None
@@ -60,3 +63,49 @@ class StoreContainer(object):
         """Add several stores to the container at once."""
         assert isinstance(stores, (list, tuple))
         [self.add(store) for store in stores]
+
+
+class Publisher(object):
+    """Publish data via queues.
+
+    This class is meant to be used in cases where subscribers should not
+    miss any data. Compared to the :class:`DataStore` class, new
+    messages to be broadcast to clients are put in a queue to be
+    processed in order.
+
+    :class:`Publisher` will work with any
+    :class:`tornado.web.RequestHandler` subclasses which implement a
+    ``submit`` method. It is recommended that a custom subscription
+    handler's :meth:`submit` method also utilize a queue to avoid losing
+    data.
+
+    A :class:`Publisher`-compatible request handler is included in
+    :class:`tornadose.handlers.WebSocketSubscriber`.
+
+    """
+    def __init__(self):
+        self.messages = Queue()
+        self.subscribers = set()
+
+    def register(self, subscriber):
+        """Register a new subscriber."""
+        assert isinstance(subscriber, RequestHandler)
+        self.subscribers.add(subscriber)
+
+    def deregister(self, subscriber):
+        """Stop publishing to a subscriber."""
+        self.subscribers.remove(subscriber)
+
+    @gen.coroutine
+    def submit(self, message):
+        """Submit a new message to publish to subscribers."""
+        yield self.messages.put(message)
+
+    @gen.coroutine
+    def publish(self):
+        while True:
+            message = yield self.messages.get()
+            if len(self.subscribers) > 0:
+                print("Pushing message {} to {} subscribers...".format(
+                    message, len(self.subscribers)))
+                yield [subscriber.submit(message) for subscriber in self.subscribers]
