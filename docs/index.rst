@@ -8,4 +8,6 @@ Contents
 .. toctree::
    :titlesonly:
 
-   api
+   stores
+   handlers
+   changelog

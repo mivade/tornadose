@@ -10,7 +10,22 @@ from . import stores
 
 
 class EventSource(RequestHandler):
-    """Base handler for server-sent events a.k.a. EventSource."""
+    """Base handler for server-sent events a.k.a. EventSource.
+
+    The EventSource__ interface has a few advantages over websockets:
+
+    * It is a normal HTTP connection and so can be more easily monitored
+      than websockets using tools like curl__ or HTTPie__.
+    * Browsers generally automatically try to reestablish a lost
+      connection.
+    * The publish/subscribe pattern is better suited to some applications
+      than the full duplex model of websockets.
+
+    __ https://developer.mozilla.org/en-US/docs/Web/API/EventSource
+    __ http://curl.haxx.se/
+    __ https://github.com/jkbrzt/httpie
+
+    """
     def initialize(self, source, period=None):
         """The ``source`` parameter is a string that is updated with
         new data. The :class:`EventSource` instance will continuously
@@ -37,10 +52,10 @@ class EventSource(RequestHandler):
             self._request_summary(), request_time)
 
     @gen.coroutine
-    def publish(self, data):
+    def publish(self, message):
         """Pushes data to a listener."""
         try:
-            self.write('data: {}\n\n'.format(data))
+            self.write('data: {}\n\n'.format(message))
             yield self.flush()
         except StreamClosedError:
             self.finished = True
@@ -74,6 +89,7 @@ class WebSocketSubscriber(WebSocketHandler):
         self.finished = False
 
     def open(self):
+        """Register with the publisher."""
         self.publisher.register(self)
         self.run()
 
@@ -90,11 +106,19 @@ class WebSocketSubscriber(WebSocketHandler):
 
     @gen.coroutine
     def run(self):
+        """Coroutine for publishing messages as they become
+        available.
+
+        """
         while not self.finished:
             message = yield self.messages.get()
-            self.send(message)
+            self.publish(message)
 
-    def send(self, message):
+    def publish(self, message):
+        """Push a new message to the client. The data will be
+        available as a JSON object with the key ``data``.
+
+        """
         try:
             self.write_message(dict(data=message))
         except WebSocketClosedError:

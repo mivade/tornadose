@@ -1,29 +1,8 @@
 Tornado-sent events
 ===================
 
-Tornadose is a simple module for defining Tornado_ request handlers
-that can stream data to clients using the EventSource_ interface (also
-known as server-sent events or SSE). Although similar functionality
-can be accomplished using Tornado's built-in support for websockets,
-the EventSource interface has a few advantages:
-
-* It is a normal HTTP connection and so can be more easily monitored
-  than websockets using tools like curl_ or HTTPie_.
-* Browsers generally automatically try to reestablish a lost
-  connection.
-* The publish/subscribe pattern is better suited to some applications
-  than the full duplex model of websockets.
-
-Implementation
---------------
-
-Some other modules already exist to add SSE functionality to Tornado,
-including `tornado-sse`_ and `tornado-eventsource`_. Tornadose works
-slightly differently in that it uses a data store to be notified of
-new data to publish to clients, a model which was in part inspired by
-the Flux_ architecture. This allows the ``EventSource`` request
-handler to be entirely decoupled from the actual data source and thus
-minimize external requirements for Tornadose itself.
+An implementation of the publish/subscribe pattern for the Tornado_ web
+server.
 
 Usage
 -----

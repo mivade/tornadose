@@ -38,7 +38,7 @@ class DataStore(object):
 
 
 class StoreContainer(object):
-    """Class for holding multiple data stores."""
+    """A convenience class for containing multiple data stores."""
     def __init__(self, stores=None):
         """Create the container with a list of stores."""
         assert isinstance(stores, (list, tuple)) or stores is None
