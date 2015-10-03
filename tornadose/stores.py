@@ -77,7 +77,9 @@ class Publisher(object):
     :class:`tornado.web.RequestHandler` subclasses which implement a
     ``submit`` method. It is recommended that a custom subscription
     handler's :meth:`submit` method also utilize a queue to avoid losing
-    data.
+    data. The subscriber must also register/deregister itself with the
+    :class:`Publisher` via the :meth:`Publisher.register` and
+    :meth:`Publisher.deregister` methods.
 
     A :class:`Publisher`-compatible request handler is included in
     :class:`tornadose.handlers.WebSocketSubscriber`.
