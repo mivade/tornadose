@@ -61,7 +61,7 @@ class BaseStore(object):
         raise NotImplementedError('publish must be implemented!')
 
 
-class DataStore(object):
+class DataStore(BaseStore):
     """Generic object for producing data to feed to clients.
 
     To use this, simply instantiate and update the ``data`` property
@@ -75,7 +75,8 @@ class DataStore(object):
     is the same as the previous data.
 
     """
-    def __init__(self, initial_data=None):
+    def initialize(self, initial_data=None):
+        self.last_id = None
         self.set_data(initial_data)
 
     def set_data(self, new_data):
@@ -90,6 +91,17 @@ class DataStore(object):
     @data.setter
     def data(self, new_data):
         self.set_data(new_data)
+
+    def submit(self, message):
+        self.data = message
+
+    @gen.coroutine
+    def publish(self):
+        while True:
+            if self.id is not self.last_id:
+                yield [subscriber.submit(self.data) for subscriber in self.subscribers]
+            else:
+                yield gen.moment
 
 
 class Publisher(BaseStore):
