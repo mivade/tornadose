@@ -3,7 +3,8 @@ the Fibonacci sequence to listeners.
 
 """
 
-from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado import gen
+from tornado.ioloop import IOLoop
 from tornado.options import define, options
 from tornado.web import Application, RequestHandler
 from tornadose.handlers import EventSource
@@ -12,7 +13,7 @@ from tornadose.stores import DataStore
 html = """
 <div id="messages"></div>
 <script type="text/javascript">
-  var source = new EventSource('/events');
+  var source = new EventSource('/fibonacci');
   source.onmessage = function(message) {
     var div = document.getElementById("messages");
     div.innerHTML = message.data + "<br>" + div.innerHTML;
@@ -28,28 +29,33 @@ def fibonacci():
         yield a
         a, b = b, a + b
 
-sequence = fibonacci()
-
-
-def get_next():
-    store.data = next(sequence)
-
 
 class MainHandler(RequestHandler):
     def get(self):
         self.write(html)
 
-if __name__ == "__main__":
-    define('port', default=9000)
-    options.parse_command_line()
 
+@gen.coroutine
+def generate_sequence():
+    for number in fibonacci():
+        store.submit(number)
+        yield gen.sleep(1)
+
+
+@gen.coroutine
+def main():
     app = Application(
         [
             ('/', MainHandler),
-            ('/events', EventSource, {'source': store})
+            ('/fibonacci', EventSource, {'store': store})
         ],
         debug=True
     )
     app.listen(options.port)
-    PeriodicCallback(get_next, 1000).start()
-    IOLoop.instance().start()
+    yield generate_sequence()
+
+if __name__ == "__main__":
+    define('port', default=9000)
+    options.parse_command_line()
+
+    IOLoop.instance().run_sync(main)

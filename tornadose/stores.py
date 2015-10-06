@@ -1,10 +1,12 @@
 """Data storage for dynamic updates to clients."""
 
+import logging
 from uuid import uuid4
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.queues import Queue
-from tornado.log import app_log
+
+logger = logging.getLogger('tornadose.stores')
 
 
 class BaseStore(object):
@@ -30,14 +32,16 @@ class BaseStore(object):
 
         """
         assert isinstance(subscriber, RequestHandler)
+        logger.debug('New subscriber')
         self.subscribers.add(subscriber)
 
     def deregister(self, subscriber):
         """Stop publishing to a subscriber."""
         try:
+            logger.debug('Subscriber left')
             self.subscribers.remove(subscriber)
         except KeyError:
-            app_log.debug(
+            logger.debug(
                 'Error removing subscriber: ' +
                 str(subscriber))
 
@@ -78,6 +82,7 @@ class DataStore(BaseStore):
     def initialize(self, initial_data=None):
         self.last_id = None
         self.set_data(initial_data)
+        self.publish()
 
     def set_data(self, new_data):
         """Update the store with new data."""
@@ -93,12 +98,13 @@ class DataStore(BaseStore):
         self.set_data(new_data)
 
     def submit(self, message):
-        self.data = message
+        self.data = str(message)
 
     @gen.coroutine
     def publish(self):
         while True:
             if self.id is not self.last_id:
+                self.last_id = self.id
                 yield [subscriber.submit(self.data) for subscriber in self.subscribers]
             else:
                 yield gen.moment
@@ -126,6 +132,7 @@ class QueueStore(BaseStore):
     """
     def initialize(self):
         self.messages = Queue()
+        self.publish()
 
     @gen.coroutine
     def submit(self, message):

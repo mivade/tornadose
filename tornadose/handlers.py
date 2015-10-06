@@ -1,5 +1,6 @@
 """Custom request handlers for pushing data to connected clients."""
 
+import logging
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.websocket import WebSocketHandler, WebSocketClosedError
@@ -7,6 +8,8 @@ from tornado.queues import Queue
 from tornado.iostream import StreamClosedError
 from tornado.log import access_log
 from . import stores
+
+logger = logging.getLogger('tornadose.handlers')
 
 
 class BaseHandler(RequestHandler):
@@ -51,7 +54,8 @@ class EventSource(BaseHandler):
         """
         assert isinstance(store, stores.BaseStore)
         assert isinstance(period, (int, float)) or period is None
-        store.register(self)
+        self.store = store
+        self.store.register(self)
         self.period = period
         self.finished = False
         self.set_header('content-type', 'text/event-stream')
@@ -67,6 +71,7 @@ class EventSource(BaseHandler):
     @gen.coroutine
     def submit(self, message):
         """Receive incoming data."""
+        logger.debug('Incoming message: ' + message)
         yield self.publish(message)
 
 
