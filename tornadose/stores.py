@@ -92,34 +92,6 @@ class DataStore(object):
         self.set_data(new_data)
 
 
-class StoreContainer(object):
-    """A convenience class for containing multiple data stores."""
-    def __init__(self, stores=None):
-        """Create the container with a list of stores."""
-        assert isinstance(stores, (list, tuple)) or stores is None
-        if stores is not None:
-            assert [isinstance(store, DataStore) for store in stores]
-            self._stores = stores
-        else:
-            self._stores = []
-
-    def __len__(self):
-        return len(self._stores)
-
-    def __getitem__(self, i):
-        return self._stores[i]
-
-    def add(self, store):
-        """Add a store to the container."""
-        assert isinstance(store, DataStore)
-        self._stores.append(store)
-
-    def add_stores(self, stores):
-        """Add several stores to the container at once."""
-        assert isinstance(stores, (list, tuple))
-        [self.add(store) for store in stores]
-
-
 class Publisher(BaseStore):
     """Publish data via queues.
 
