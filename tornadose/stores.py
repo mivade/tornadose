@@ -129,7 +129,6 @@ class QueueStore(BaseStore):
 
     @gen.coroutine
     def submit(self, message):
-        """Submit a new message to publish to subscribers."""
         yield self.messages.put(message)
 
     @gen.coroutine
