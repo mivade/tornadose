@@ -4,6 +4,61 @@ from uuid import uuid4
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.queues import Queue
+from tornado.log import app_log
+
+
+class BaseStore(object):
+    """Base class for all data store types.
+
+    At a minimum, derived classes should implement ``submit`` and
+    ``publish`` methods.
+
+    """
+    def __init__(self, *args, **kwargs):
+        self.subscribers = set()
+        self.initialize(*args, **kwargs)
+
+    def initialize(self, *args, **kwargs):
+        """Hook for doing custom initialization. Child classes should
+        implement this method instead of overwriting ``__init__``.
+
+        """
+
+    def register(self, subscriber):
+        """Register a new subscriber. This method should be invoked by
+        listeners to start receiving messages.
+
+        """
+        assert isinstance(subscriber, RequestHandler)
+        self.subscribers.add(subscriber)
+
+    def deregister(self, subscriber):
+        """Stop publishing to a subscriber."""
+        try:
+            self.subscribers.remove(subscriber)
+        except KeyError:
+            app_log.debug(
+                'Error removing subscriber: ' +
+                str(subscriber))
+
+    def submit(self, message):
+        """Add a new message to be pushed to subscribers. This method
+        must be implemented by child classes.
+
+        This method exists to store new data. To actually publish the
+        data, implement the ``publish`` method.
+
+        """
+        raise NotImplementedError('submit must be implemented!')
+
+    def publish(self):
+        """Push messages to all listeners. This method must be
+        implemented by child classes. A recommended way to implement
+        this method is as a looping coroutine which yields until new
+        data is available via the :meth:`submit` method.
+
+        """
+        raise NotImplementedError('publish must be implemented!')
 
 
 class DataStore(object):
@@ -65,7 +120,7 @@ class StoreContainer(object):
         [self.add(store) for store in stores]
 
 
-class Publisher(object):
+class Publisher(BaseStore):
     """Publish data via queues.
 
     This class is meant to be used in cases where subscribers should not
@@ -85,18 +140,8 @@ class Publisher(object):
     :class:`tornadose.handlers.WebSocketSubscriber`.
 
     """
-    def __init__(self):
+    def initialize(self):
         self.messages = Queue()
-        self.subscribers = set()
-
-    def register(self, subscriber):
-        """Register a new subscriber."""
-        assert isinstance(subscriber, RequestHandler)
-        self.subscribers.add(subscriber)
-
-    def deregister(self, subscriber):
-        """Stop publishing to a subscriber."""
-        self.subscribers.remove(subscriber)
 
     @gen.coroutine
     def submit(self, message):

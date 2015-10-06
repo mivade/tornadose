@@ -14,7 +14,7 @@ setup(
     description="Tornado-sent events",
     license="MIT",
     long_description=read('README.rst'),
-    keywords="tornado web eventsource",
+    keywords="tornado web eventsource websockets",
     url="https://github.com/mivade/tornadose",
     packages=['tornadose'],
     classifiers=[
