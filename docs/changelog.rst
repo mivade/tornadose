@@ -4,7 +4,7 @@ Changelog
 Version 0.2.0 (upcoming)
 ------------------------
 
-* Adds a new queue-based ``Publisher`` store.
+* Adds a new queue-based ``QueueStore`` store.
 * Implements a websocket-based subscription model.
 * Adds unit testing.
 

@@ -104,7 +104,7 @@ class DataStore(BaseStore):
                 yield gen.moment
 
 
-class Publisher(BaseStore):
+class QueueStore(BaseStore):
     """Publish data via queues.
 
     This class is meant to be used in cases where subscribers should not
@@ -112,15 +112,15 @@ class Publisher(BaseStore):
     messages to be broadcast to clients are put in a queue to be
     processed in order.
 
-    :class:`Publisher` will work with any
+    :class:`QueueStore` will work with any
     :class:`tornado.web.RequestHandler` subclasses which implement a
     ``submit`` method. It is recommended that a custom subscription
-    handler's :meth:`submit` method also utilize a queue to avoid losing
-    data. The subscriber must also register/deregister itself with the
-    :class:`Publisher` via the :meth:`Publisher.register` and
-    :meth:`Publisher.deregister` methods.
+    handler's :meth:`submit` method also utilize a queue to avoid
+    losing data. The subscriber must also register/deregister itself
+    with the :class:`QueueStore` via the :meth:`QueueStore.register`
+    and :meth:`QueueStore.deregister` methods.
 
-    A :class:`Publisher`-compatible request handler is included in
+    A :class:`QueueStore`-compatible request handler is included in
     :class:`tornadose.handlers.WebSocketSubscriber`.
 
     """
