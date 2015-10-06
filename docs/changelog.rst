@@ -4,6 +4,7 @@ Changelog
 Version 0.2.0 (upcoming)
 ------------------------
 
+* Reworks stores and handlers (backwards incompatible!).
 * Adds a new queue-based ``QueueStore`` store.
 * Implements a websocket-based subscription model.
 * Adds unit testing.
