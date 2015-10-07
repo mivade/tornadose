@@ -1,6 +1,9 @@
+"""Basic tests for verifying compliance with ``tornado.web.Application``
+instances."""
+
 import pytest
 from tornado import web
-from tornadose.stores import DataStore, StoreContainer, Publisher
+from tornadose.stores import DataStore, QueueStore
 from tornadose.handlers import EventSource, WebSocketSubscriber
 
 
@@ -15,5 +18,6 @@ def test_add_eventsource_handler(app):
 
 
 def test_add_websocket_subscriber(app):
-    publisher = Publisher()
-    app.add_handlers('.*$', [(r'/socket', WebSocketSubscriber, dict(publisher=publisher))])
+    store = QueueStore()
+    app.add_handlers('.*$', [
+        (r'/socket', WebSocketSubscriber, dict(store=store))])

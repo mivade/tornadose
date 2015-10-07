@@ -74,7 +74,6 @@ class EventSource(BaseHandler):
         logger.debug('Incoming message: ' + message)
         yield self.publish(message)
 
-
     @gen.coroutine
     def publish(self, message):
         """Pushes data to a listener."""
