@@ -14,7 +14,7 @@ def app():
 
 def test_add_eventsource_handler(app):
     store = DataStore(1)
-    app.add_handlers(".*$", [(r'/stream', EventSource, dict(source=store))])
+    app.add_handlers(".*$", [(r'/stream', EventSource, dict(store=store))])
 
 
 def test_add_websocket_subscriber(app):

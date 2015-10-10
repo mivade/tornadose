@@ -2,9 +2,8 @@
 
 import pytest
 
-from tornado import gen
+from tornado import gen, escape
 from tornado.web import Application
-from tornado.httpclient import HTTPRequest
 
 from tornadose.handlers import EventSource
 from tornadose.stores import BaseStore
@@ -17,23 +16,26 @@ class TestStore(BaseStore):
 
     @gen.coroutine
     def publish(self):
-        yield gen.sleep(1)
         for subscriber in self.subscribers:
             yield subscriber.publish(self.message)
 
+
 store = TestStore()
-application = Application([
-    (r'/', EventSource, dict(store=store))
-])
-req = HTTPRequest('http://localhost')
 
 
 @pytest.fixture
 def app():
-    return application
+    return Application([
+        (r'/', EventSource, dict(store=store))
+    ])
 
 
-@pytest.mark.gen_test
-def test_get(http_client):
+def test_get(http_server, http_client, io_loop, base_url):
+    def callback(chunk):
+        print(chunk)
+        assert 'test' in escape.native_str(chunk)
+        http_client.close()
+
     store.submit('test')
-    yield [store.publish(), http_client.fetch('http://localhost:5555/')]
+    io_loop.call_later(0.01, store.publish)
+    http_client.fetch(base_url, streaming_callback=callback)
