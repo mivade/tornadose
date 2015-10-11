@@ -7,7 +7,7 @@ server.
 Usage
 -----
 
-A simple example of usage:
+A simple example of using server-sent events (a.k.a. EventSource):
 
 .. code-block:: python
 
@@ -40,7 +40,15 @@ or with HTTPie_:
 
    $ http -S get localhost:9000
 
-See also the ``demos`` directory for further examples.
+Additional demos can be found in the ``demos`` directory.
+
+See also
+--------
+
+Some other implementations of server-sent events with Tornado include:
+
+* tornado-sse_
+* tornado-eventsource_
 
 License
 -------
@@ -54,5 +62,4 @@ Tornadose is freely available under the terms of the MIT license. See
 .. _HTTPie: https://github.com/jkbrzt/httpie
 .. _tornado-sse: https://github.com/truetug/tornado-sse
 .. _tornado-eventsource: https://github.com/guilhermef/tornado-eventsource
-.. _Flux: https://facebook.github.io/flux/
 .. _GitHub: https://github.com/mivade/tornadose
