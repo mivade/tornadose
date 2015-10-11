@@ -1,10 +1,10 @@
 """Data storage for dynamic updates to clients."""
 
 import logging
-from uuid import uuid4
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.queues import Queue
+from tornado.locks import Event
 
 logger = logging.getLogger('tornadose.stores')
 
@@ -74,20 +74,16 @@ class DataStore(BaseStore):
     instance so that the :class:`EventSource` can listen for
     updates.
 
-    When data is updated, a unique id is generated. This is in order
-    to enable the publisher to update any new data, even if the value
-    is the same as the previous data.
-
     """
     def initialize(self, initial_data=None):
-        self.last_id = None
+        self.ready = Event()
         self.set_data(initial_data)
         self.publish()
 
     def set_data(self, new_data):
         """Update the store with new data."""
         self._data = new_data
-        self.id = uuid4()
+        self.ready.set()
 
     @property
     def data(self):
@@ -103,11 +99,9 @@ class DataStore(BaseStore):
     @gen.coroutine
     def publish(self):
         while True:
-            if self.id is not self.last_id:
-                self.last_id = self.id
-                yield [subscriber.submit(self.data) for subscriber in self.subscribers]
-            else:
-                yield gen.moment
+            yield self.ready.wait()
+            yield [subscriber.submit(self.data) for subscriber in self.subscribers]
+            self.ready.clear()
 
 
 class QueueStore(BaseStore):
