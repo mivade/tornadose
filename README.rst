@@ -4,6 +4,24 @@ Tornado-sent events
 An implementation of the publish/subscribe pattern for the Tornado_ web
 server.
 
+Installation
+------------
+
+Tornadose is on PyPI:
+
+.. code-block:: bash
+
+    $ pip install tornadose
+
+This will grab the latest official release. Alternatively, or for development,
+you can clone the repository and install it manually:
+
+.. code-block:: bash
+
+    $ git clone https://github.com/mivade/tornadose.git
+    $ cd tornadose
+    $ python setup.py install
+
 Usage
 -----
 
@@ -42,6 +60,12 @@ or with HTTPie_:
 
 Additional demos can be found in the ``demos`` directory.
 
+Contributing
+------------
+
+Contributions, complaints, criticisms, and whatever else are welcome. The source
+code and issue tracker can be found on GitHub_.
+
 See also
 --------
 
@@ -54,7 +78,7 @@ License
 -------
 
 Tornadose is freely available under the terms of the MIT license. See
-``LICENSE`` for details. The source code can be found on GitHub_.
+``LICENSE`` for details.
 
 .. _Tornado: http://www.tornadoweb.org/en/stable/
 .. _EventSource: https://developer.mozilla.org/en-US/docs/Web/API/EventSource
