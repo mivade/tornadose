@@ -56,7 +56,7 @@ def generate_sequence():
 def subscribe():
     """Subscribe to the stream with an AsyncHTTPClient."""
     def callback(data):
-        print data
+        print(data)
 
     if options.profile:
         yield client.fetch(
