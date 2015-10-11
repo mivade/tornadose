@@ -14,13 +14,13 @@ A simple example of usage:
    import random
    from tornado.ioloop import IOLoop, PeriodicCallback
    from tornado.web import Application
-   from tornadose.handler import EventSource
+   from tornadose.handlers import EventSource
    from tornadose.stores import DataStore
 
    store = DataStore()
 
    app = Application(
-       [(r'/', EventSource, {'source': store})],
+       [(r'/', EventSource, {'store': store})],
        debug=True)
    app.listen(9000)
 
@@ -28,13 +28,13 @@ A simple example of usage:
    PeriodicCallback(lambda: store.set_data(random.random()), 1000).start()
    loop.start()
 
-To monitor the stream with curl:
+To monitor the stream with curl_:
 
 .. code-block:: bash
 
    $ curl http://localhost:9000
 
-or with HTTPie:
+or with HTTPie_:
 
 .. code-block:: bash
 
