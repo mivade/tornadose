@@ -19,6 +19,16 @@ class BaseHandler(RequestHandler):
     methods.
 
     """
+    def initialize(self, store):
+        """Common initialization of handlers happens here. If additional
+        initialization is required, this method *must* be called with
+        ``super`` in order to properly initialize the handler.
+
+        """
+        assert isinstance(store, stores.BaseStore)
+        self.store = store
+        self.store.register(self.store)
+
     def submit(self, message):
         """Submit a new message to be published. This method must be
         implemented by child classes.
@@ -57,10 +67,8 @@ class EventSource(BaseHandler):
         speeds.
 
         """
-        assert isinstance(store, stores.BaseStore)
+        super(EventSource, self).initialize(store)
         assert isinstance(period, (int, float)) or period is None
-        self.store = store
-        self.store.register(self)
         self.period = period
         self.finished = False
         self.set_header('content-type', 'text/event-stream')
@@ -109,7 +117,7 @@ class WebSocketSubscriber(BaseHandler, WebSocketHandler):
 
     """
     def initialize(self, store):
-        self.store = store
+        super(WebSocketSubscriber, self).initialize(store)
         self.messages = Queue()
         self.finished = False
 
