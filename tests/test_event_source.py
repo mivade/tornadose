@@ -2,23 +2,11 @@
 
 import pytest
 
-from tornado import gen, escape
+from tornado import escape
 from tornado.web import Application
 
 from tornadose.handlers import EventSource
-from tornadose.stores import BaseStore
-
-
-class TestStore(BaseStore):
-    """Special store for testing handlers."""
-    def submit(self, message):
-        self.message = message
-
-    @gen.coroutine
-    def publish(self):
-        for subscriber in self.subscribers:
-            yield subscriber.publish(self.message)
-
+from utilities import TestStore
 
 store = TestStore()
 

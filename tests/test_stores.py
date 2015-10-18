@@ -3,16 +3,8 @@
 import pytest
 
 from tornado.web import Application
-from tornadose.stores import BaseStore, DataStore, QueueStore
-from tornadose.handlers import BaseHandler
-
-
-class TestHandler(BaseHandler):
-    def submit(self, message):
-        self.message = message
-
-    def publish(self):
-        assert self.message is not None
+from tornadose.stores import DataStore, QueueStore
+from utilities import TestHandler
 
 data_store = DataStore()
 queue_store = QueueStore()
