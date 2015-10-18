@@ -21,8 +21,9 @@ class BaseHandler(RequestHandler):
     """
     def initialize(self, store):
         """Common initialization of handlers happens here. If additional
-        initialization is required, this method *must* be called with
-        ``super`` in order to properly initialize the handler.
+        initialization is required, this method must either be called with
+        ``super`` or the child class must assign the ``store`` attribute and
+        register itself with the store.
 
         """
         assert isinstance(store, stores.BaseStore)

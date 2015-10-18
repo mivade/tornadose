@@ -1,11 +1,13 @@
 Changelog
 =========
 
-Version 0.2.1 (Upcoming)
-------------------------
+Version 0.2.1
+-------------
 
-* Subscription handlers automatically get registered with stores, simplifying
-  the creation of custom handlers.
+*2015-10-17*
+
+* Subscription handlers automatically get registered with stores. This
+  simplifies creating custom handlers.
 
 Version 0.2.0
 -------------
