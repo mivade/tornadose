@@ -1,4 +1,8 @@
 language: python
+notifications:
+    email:
+        on_success: never
+        on_failure: always
 env:
   - TOXENV=py27
   - TOXENV=py33
