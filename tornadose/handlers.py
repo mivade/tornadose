@@ -27,7 +27,7 @@ class BaseHandler(RequestHandler):
         """
         assert isinstance(store, stores.BaseStore)
         self.store = store
-        self.store.register(self.store)
+        self.store.register(self)
 
     def submit(self, message):
         """Submit a new message to be published. This method must be
