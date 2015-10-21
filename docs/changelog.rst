@@ -1,6 +1,14 @@
 Changelog
 =========
 
+Version 0.2.2
+-------------
+
+*2015-10-21*
+
+* Fix bug that printed out all messages sent with websocket
+  subscribers which was originally present for debugging purposes.
+
 Version 0.2.1
 -------------
 
