@@ -137,6 +137,4 @@ class QueueStore(BaseStore):
         while True:
             message = yield self.messages.get()
             if len(self.subscribers) > 0:
-                print("Pushing message {} to {} subscribers...".format(
-                    message, len(self.subscribers)))
                 yield [subscriber.submit(message) for subscriber in self.subscribers]
