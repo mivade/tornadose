@@ -85,7 +85,7 @@ class EventSource(BaseHandler):
     @gen.coroutine
     def submit(self, message):
         """Receive incoming data."""
-        logger.debug('Incoming message: ' + message)
+        logger.debug('Incoming message: ' + str(message))
         yield self.publish(message)
 
     @gen.coroutine
