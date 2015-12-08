@@ -27,15 +27,14 @@ class BaseHandler(RequestHandler):
 
         """
         assert isinstance(store, stores.BaseStore)
+        self.messages = Queue()
         self.store = store
         self.store.register(self)
 
+    @gen.coroutine
     def submit(self, message):
-        """Submit a new message to be published. This method must be
-        implemented by child classes.
-
-        """
-        raise NotImplementedError('submit must be implemented!')
+        """Submit a new message to be published."""
+        yield self.messages.put(message)
 
     def publish(self):
         """Push a message to the subscriber. This method must be
@@ -62,15 +61,8 @@ class EventSource(BaseHandler):
     __ https://github.com/jkbrzt/httpie
 
     """
-    def initialize(self, store, period=None):
-        """If ``period`` is given, publishers will sleep for
-        approximately the given time in order to throttle data
-        speeds.
-
-        """
+    def initialize(self, store):
         super(EventSource, self).initialize(store)
-        assert isinstance(period, (int, float)) or period is None
-        self.period = period
         self.finished = False
         self.set_header('content-type', 'text/event-stream')
         self.set_header('cache-control', 'no-cache')
@@ -81,12 +73,6 @@ class EventSource(BaseHandler):
         access_log.info(
             "%d %s %.2fms", self.get_status(),
             self._request_summary(), request_time)
-
-    @gen.coroutine
-    def submit(self, message):
-        """Receive incoming data."""
-        logger.debug('Incoming message: ' + str(message))
-        yield self.publish(message)
 
     @gen.coroutine
     def publish(self, message):
@@ -101,10 +87,8 @@ class EventSource(BaseHandler):
     def get(self, *args, **kwargs):
         try:
             while not self.finished:
-                if self.period is not None:
-                    yield gen.sleep(self.period)
-                else:
-                    yield gen.moment
+                message = yield self.messages.get()
+                yield self.publish(message)
         except Exception:
             pass
         finally:
@@ -113,13 +97,9 @@ class EventSource(BaseHandler):
 
 
 class WebSocketSubscriber(BaseHandler, WebSocketHandler):
-    """A Websocket-based subscription handler to be used with
-    :class:`tornadose.stores.QueueStore`.
-
-    """
+    """A Websocket-based subscription handler."""
     def initialize(self, store):
         super(WebSocketSubscriber, self).initialize(store)
-        self.messages = Queue()
         self.finished = False
 
     @gen.coroutine
@@ -136,10 +116,6 @@ class WebSocketSubscriber(BaseHandler, WebSocketHandler):
     def _close(self):
         self.store.deregister(self)
         self.finished = True
-
-    @gen.coroutine
-    def submit(self, message):
-        yield self.messages.put(message)
 
     @gen.coroutine
     def publish(self, message):

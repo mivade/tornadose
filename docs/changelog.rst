@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.3.0 (upcoming)
+------------------------
+
+* Improve performance by always using a Queue for message handling.
+
 Version 0.2.2
 -------------
 
