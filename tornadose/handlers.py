@@ -15,8 +15,7 @@ logger = logging.getLogger('tornadose.handlers')
 class BaseHandler(RequestHandler):
     """Base handler for subscribers. To be compatible with data stores
     defined in :mod:`tornadose.stores`, custom handlers should inherit
-    this class and implement the :meth:`submit` and :meth:`publish`
-    methods.
+    this class and implement the :meth:`publish` method.
 
     """
     def initialize(self, store):
