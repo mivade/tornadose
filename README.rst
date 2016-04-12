@@ -20,7 +20,7 @@ you can clone the repository and install it manually:
 
     $ git clone https://github.com/mivade/tornadose.git
     $ cd tornadose
-    $ python setup.py install
+    $ pip install -e .
 
 Usage
 -----
@@ -43,7 +43,7 @@ A simple example of using server-sent events (a.k.a. EventSource):
    app.listen(9000)
 
    loop = IOLoop.instance()
-   PeriodicCallback(lambda: store.set_data(random.random()), 1000).start()
+   PeriodicCallback(lambda: store.submit(random.random()), 1000).start()
    loop.start()
 
 To monitor the stream with curl_:

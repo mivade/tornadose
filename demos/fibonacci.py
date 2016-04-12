@@ -18,7 +18,7 @@ html = """
 <div id="messages"></div>
 <script type="text/javascript">
   var source = new EventSource('/fibonacci');
-  source.onmessage = function(message) {
+  source.onmessage = function (message) {
     var div = document.getElementById("messages");
     div.innerHTML = message.data + "<br>" + div.innerHTML;
   };
