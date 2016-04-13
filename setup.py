@@ -16,15 +16,17 @@ setup(
     long_description=read('README.rst'),
     keywords="tornado web eventsource websockets pubsub",
     url="https://github.com/mivade/tornadose",
+    install_requires=read('requirements.txt'),
     packages=['tornadose'],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License"
     ],
 )
