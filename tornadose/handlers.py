@@ -50,8 +50,8 @@ class EventSource(BaseHandler):
 
     * It is a normal HTTP connection and so can be more easily monitored
       than websockets using tools like curl__ or HTTPie__.
-    * Browsers generally automatically try to reestablish a lost
-      connection.
+    * Browsers generally try to reestablish a lost connection
+      automatically.
     * The publish/subscribe pattern is better suited to some applications
       than the full duplex model of websockets.
 
