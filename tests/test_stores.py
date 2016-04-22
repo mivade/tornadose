@@ -7,7 +7,7 @@ from tornadose.stores import BaseStore, DataStore, QueueStore, RedisStore
 from utilities import TestHandler
 
 
-class BaseTest:
+class BaseTest(object):
     @pytest.fixture
     def store(self):
         return None
