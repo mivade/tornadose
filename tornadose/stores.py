@@ -1,10 +1,18 @@
 """Data storage for dynamic updates to clients."""
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
+
 from tornado import gen
+from tornado.concurrent import run_on_executor
 from tornado.web import RequestHandler
 from tornado.queues import Queue
 from tornado.locks import Event
+
+try:
+    import redis
+except ImportError:
+    redis = None
 
 logger = logging.getLogger('tornadose.stores')
 
@@ -102,6 +110,57 @@ class DataStore(BaseStore):
             yield self.ready.wait()
             yield [subscriber.submit(self.data) for subscriber in self.subscribers]
             self.ready.clear()
+
+
+class RedisStore(BaseStore):
+    """Publish data via a Redis backend.
+
+    This data store works in a similar manner as
+    :class:`DataStore`. The primary advantage is that external
+    programs can be used to publish data to be consumed by clients.
+
+    The ``channel`` keyword argument specifies which Redis channel to
+    publish to and defaults to ``tornadose``.
+
+    All remaining keyword arguments are passed directly to the
+    ``redis.StrictRedis`` constructor. See `redis-py`__'s
+    documentation for detais.
+
+    New messages are read in a background thread via a
+    :class:`concurrent.futures.ThreadPoolExecutor`. This requires
+    either Python >= 3.2 or the backported ``futures`` module to be
+    installed.
+
+    __ https://redis-py.readthedocs.org/en/latest/
+
+    :raises ConnectionError: when the Redis host is not pingable
+
+    """
+    executor = ThreadPoolExecutor(max_workers=1)
+
+    def initialize(self, channel='tornadose', **kwargs):
+        if redis is None:
+            raise RuntimeError("The redis module is required to use RedisStore")
+        self.channel = channel
+        self._redis = redis.StrictRedis(**kwargs)
+        self._redis.ping()
+        self._pubsub = self._redis.pubsub(ignore_subscribe_messages=True)
+        self._pubsub.subscribe(self.channel)
+        self.publish()
+
+    def submit(self, message, debug=False):
+        self._redis.publish(self.channel, message)
+        if debug:
+            logger.debug(message)
+            self._redis.setex(self.channel, 5, message)
+
+    @run_on_executor
+    def publish(self):
+        while True:
+            for msg in self._pubsub.listen():
+                data = msg['data']
+                if len(self.subscribers) > 0:
+                    [subscriber.submit(data) for subscriber in self.subscribers]
 
 
 class QueueStore(BaseStore):

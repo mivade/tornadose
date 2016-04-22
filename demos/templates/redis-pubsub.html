@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tornadose RedisStore demo</title>
+    <script type="text/javascript">
+     var source = new EventSource('/stream');
+     source.onmessage = function (msg) {
+       document.querySelector('#message').innerHTML = msg.data;
+     };
+    </script>
+  </head>
+  <body>
+    <div id="message"></div>
+  </body>
+</html>
