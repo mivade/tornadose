@@ -1,7 +1,13 @@
-.PHONY: docs
+.PHONY: docs build
+
+build:
+	python setup.py bdist_wheel
 
 docs:
 	cd docs; make html
+
+test:
+	py.test
 
 clean-docs:
 	@echo "Cleaning docs"

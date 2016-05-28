@@ -4,7 +4,7 @@ Changelog
 Version 0.4.0
 -------------
 
-*Upcoming*
+*2016-05-28*
 
 * Added a Redis-backed data store. This allows for cross-application
   publishing since anything can publish to the channel the store is
