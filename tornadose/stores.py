@@ -2,7 +2,6 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-
 from tornado import gen
 from tornado.concurrent import run_on_executor
 from tornado.web import RequestHandler
@@ -136,16 +135,19 @@ class RedisStore(BaseStore):
     :raises ConnectionError: when the Redis host is not pingable
 
     """
-    executor = ThreadPoolExecutor(max_workers=1)
-
     def initialize(self, channel='tornadose', **kwargs):
         if redis is None:
             raise RuntimeError("The redis module is required to use RedisStore")
+        self.executor = ThreadPoolExecutor(max_workers=1)
         self.channel = channel
+        self.messages = Queue()
+        self._done = Event()
+
         self._redis = redis.StrictRedis(**kwargs)
         self._redis.ping()
         self._pubsub = self._redis.pubsub(ignore_subscribe_messages=True)
         self._pubsub.subscribe(self.channel)
+
         self.publish()
 
     def submit(self, message, debug=False):
@@ -154,13 +156,24 @@ class RedisStore(BaseStore):
             logger.debug(message)
             self._redis.setex(self.channel, 5, message)
 
+    def shutdown(self):
+        """Stop the publishing loop."""
+        self._done.set()
+        self.executor.shutdown(wait=False)
+
     @run_on_executor
+    def _get_message(self):
+        data = self._pubsub.get_message(timeout=1)
+        if data is not None:
+            data = data['data']
+        return data
+
+    @gen.coroutine
     def publish(self):
-        while True:
-            for msg in self._pubsub.listen():
-                data = msg['data']
-                if len(self.subscribers) > 0:
-                    [subscriber.submit(data) for subscriber in self.subscribers]
+        while not self._done.is_set():
+            data = yield self._get_message()
+            if len(self.subscribers) > 0 and data is not None:
+                [subscriber.submit(data) for subscriber in self.subscribers]
 
 
 class QueueStore(BaseStore):
