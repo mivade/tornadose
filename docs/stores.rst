@@ -2,11 +2,7 @@ Data storage and publishing
 ===========================
 
 In order to publish data to listeners, Tornadose utilizes a data store
-concept somewhat reminiscent of that used in Flux_. In short,
-subscribers start listening to a data store and are notified when
-there are updates.
-
-.. _Flux: https://facebook.github.io/flux/
+concept in which subscribers listen to a data store to receive updates.
 
 .. autoclass:: tornadose.stores.BaseStore
    :members:
@@ -14,3 +10,5 @@ there are updates.
 .. autoclass:: tornadose.stores.DataStore
 
 .. autoclass:: tornadose.stores.QueueStore
+
+.. autoclass:: tornadose.stores.RedisStore
