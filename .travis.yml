@@ -15,7 +15,6 @@ python:
 install:
     - pip install .
     - pip install -r requirements.txt
-    - pip install -r requirements-dev.txt
     - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then travis_retry pip install futures; fi
     - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then travis_retry pip install futures; fi
 script: py.test
