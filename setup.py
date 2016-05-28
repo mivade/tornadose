@@ -16,7 +16,9 @@ setup(
     long_description=read('README.rst'),
     keywords="tornado web eventsource websockets pubsub",
     url="https://github.com/mivade/tornadose",
-    install_requires=read('requirements.txt'),
+    install_requires=[
+        'tornado>=4.2'
+    ],
     packages=['tornadose'],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
