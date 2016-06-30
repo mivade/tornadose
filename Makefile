@@ -1,6 +1,7 @@
 .PHONY: docs build
 
 build:
+	python setup.py sdist
 	python setup.py bdist_wheel
 
 docs:
@@ -19,5 +20,7 @@ clean-py:
 	rm -rf dist/
 	rm -rf tornadose.egg-info/
 	rm -rf htmlcov/
+	rm -rf `find . -name *.pyc`
+	rm -rf `find . -name __pycache__`
 
 clean: clean-py clean-docs
