@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 0.4.1
+-------------
+
+*2016-06-30*
+
+* Point release which includes a source distribution on PyPI. This
+  avoids problems if Tornadose is a requirement listed in a ``setup.py``
+  file since setuptools doesn't do wheels.
+
 Version 0.4.0
 -------------
 
