@@ -6,9 +6,7 @@ from tornado import escape
 from tornado.web import Application
 
 from tornadose.handlers import EventSource
-from utilities import TestStore
-
-store = TestStore()
+import utilities
 
 
 @pytest.fixture
@@ -18,7 +16,12 @@ def app():
     ])
 
 
-def test_get(http_server, http_client, io_loop, base_url):
+@pytest.fixture
+def store():
+    return utilities.TestStore()
+
+
+def test_get(http_server, http_client, io_loop, base_url, store):
     def callback(chunk):
         print(chunk)
         assert 'test' in escape.native_str(chunk)

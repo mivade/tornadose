@@ -4,7 +4,7 @@ import pytest
 
 from tornado.web import Application
 from tornadose.stores import BaseStore, DataStore, QueueStore, RedisStore
-from utilities import TestHandler
+import utilities
 
 
 class BaseTest(object):
@@ -15,7 +15,7 @@ class BaseTest(object):
     @pytest.fixture
     def app(self):
         return Application([
-            (r'/store', TestHandler, self.store)
+            (r'/store', utilities.TestHandler, self.store)
         ])
 
     def test_submit(self, store):
