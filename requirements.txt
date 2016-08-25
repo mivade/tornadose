@@ -1,5 +1,5 @@
 tornado>=4.2.1
 redis>=2.10.5
-pytest>=2.8.1
-pytest-cov>=2.2
+pytest>=3.0.1
+pytest-cov>=2.3.1
 pytest-tornado>=0.4.4
