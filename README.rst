@@ -1,6 +1,9 @@
 Tornado-sent events
 ===================
 
+.. image:: https://coveralls.io/repos/github/mivade/tornadose/badge.svg?branch=master
+:target: https://coveralls.io/github/mivade/tornadose?branch=master
+
 An implementation of the publish/subscribe pattern for the Tornado_ web
 server.
 
