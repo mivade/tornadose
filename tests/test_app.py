@@ -3,8 +3,9 @@ instances."""
 
 import pytest
 from tornado import web
-from tornadose.stores import DataStore, QueueStore
+
 from tornadose.handlers import EventSource, WebSocketSubscriber
+import utilities
 
 
 @pytest.fixture
@@ -13,11 +14,11 @@ def app():
 
 
 def test_add_eventsource_handler(app):
-    store = DataStore(1)
+    store = utilities.TestStore()
     app.add_handlers(".*$", [(r'/stream', EventSource, dict(store=store))])
 
 
 def test_add_websocket_subscriber(app):
-    store = QueueStore()
+    store = utilities.TestStore()
     app.add_handlers('.*$', [
         (r'/socket', WebSocketSubscriber, dict(store=store))])

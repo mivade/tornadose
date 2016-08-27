@@ -83,14 +83,12 @@ class DataStore(BaseStore):
 
     """
     def initialize(self, initial_data=None):
-        self.ready = Event()
         self.set_data(initial_data)
         self.publish()
 
     def set_data(self, new_data):
         """Update the store with new data."""
         self._data = new_data
-        self.ready.set()
 
     @property
     def data(self):
@@ -106,9 +104,8 @@ class DataStore(BaseStore):
     @gen.coroutine
     def publish(self):
         while True:
-            yield self.ready.wait()
+            yield gen.moment
             yield [subscriber.submit(self.data) for subscriber in self.subscribers]
-            self.ready.clear()
 
 
 class RedisStore(BaseStore):

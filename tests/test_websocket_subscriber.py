@@ -2,7 +2,6 @@
 
 import json
 
-from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.websocket import websocket_connect
 from tornado.testing import AsyncHTTPTestCase, gen_test
@@ -26,7 +25,7 @@ class WebSocketSubscriberTestCase(AsyncHTTPTestCase):
         url = self.get_url('/').replace("http://", "ws://")
         conn = yield websocket_connect(url)
         self.store.submit('test')
-        IOLoop.current().call_later(0.01, self.store.publish)
+        self.io_loop.call_later(0.01, self.store.publish)
         msg = yield conn.read_message()
         msg = json.loads(msg)
         self.assertEqual(msg['data'], 'test')

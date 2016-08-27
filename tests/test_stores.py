@@ -1,58 +1,47 @@
 """Tests for stores."""
 
-import pytest
-
-from tornado.web import Application
+import unittest
+from tornado.testing import AsyncTestCase
 from tornadose.stores import BaseStore, DataStore, QueueStore, RedisStore
-import utilities
 
 
-class BaseTest(object):
-    @pytest.fixture
-    def store(self):
-        return None
+class BaseStoreTestCase(unittest.TestCase):
+    def setUp(self):
+        self.store = BaseStore()
 
-    @pytest.fixture
-    def app(self):
-        return Application([
-            (r'/store', utilities.TestHandler, self.store)
-        ])
+    def test_submit(self):
+        with self.assertRaises(NotImplementedError):
+            self.store.submit("data")
 
-    def test_submit(self, store):
-        store.submit('data')
+    def test_publish(self):
+        with self.assertRaises(NotImplementedError):
+            self.store.publish()
 
 
-class TestBaseStore(BaseTest):
-    @pytest.fixture
-    def store(self):
-        return BaseStore()
+class TestDataStore(AsyncTestCase):
+    def setUp(self):
+        self.store = DataStore()
+        super(TestDataStore, self).setUp()
 
-    def test_submit(self, store):
-        with pytest.raises(NotImplementedError):
-            super(TestBaseStore, self).test_submit(store)
-
-
-class TestDataStore(BaseTest):
-    @pytest.fixture
-    def store(self):
-        return DataStore()
-
-    def test_data_property(self, store):
-        assert store.data is None
-        store.data = 'data'
-        assert store.data == 'data'
+    def test_data_property(self):
+        self.assertIsNone(self.store.data)
+        self.store.data = 'data'
+        self.assertEqual(self.store.data, 'data')
 
 
-class TestQueueStore(BaseTest):
-    @pytest.fixture
-    def store(self):
-        return QueueStore()
+class TestQueueStore(AsyncTestCase):
+    def setUp(self):
+        self.store = QueueStore()
+        super(TestQueueStore, self).setUp()
+
+    def test_submit(self):
+        self.store.submit("data")
 
 
-class TestRedisStore(BaseTest):
-    @pytest.fixture
-    def store(self):
-        return RedisStore(channel='tornadose-test')
+class TestRedisStore(AsyncTestCase):
+    def setUp(self):
+        self.store = RedisStore(channel='tornadose-test')
+        super(TestRedisStore, self).setUp()
 
-    def test_submit(self, store):
-        store.submit('data', debug=True)
+    def test_submit(self):
+        self.store.submit('data', debug=True)
