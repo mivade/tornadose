@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.5
+-----------
+
+*Upcoming*
+
+* Remove ready event from ``DataStore``.
+
 Version 0.4.1
 -------------
 
