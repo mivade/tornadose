@@ -6,7 +6,10 @@ Version 0.5
 
 *Upcoming*
 
-* Remove ready event from ``DataStore``.
+* Removed ready event from ``DataStore``.
+* Stopped testing on Python 2.6. As long as Tornado supports Python 2.6,
+  tornadose will most likely still work, but for the ease of testing
+  requirements, official support is now removed.
 
 Version 0.4.1
 -------------
