@@ -4,7 +4,7 @@ from asyncio import Event, Queue
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from tornado.concurrent import run_on_executor
+from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler
 
 try:
@@ -154,7 +154,6 @@ class RedisStore(BaseStore):
         self._done.set()
         self.executor.shutdown(wait=False)
 
-    @run_on_executor
     def _get_message(self):
         data = self._pubsub.get_message(timeout=1)
         if data is not None:
@@ -162,8 +161,11 @@ class RedisStore(BaseStore):
         return data
 
     async def publish(self):
+        loop = IOLoop.current()
+
         while not self._done.is_set():
-            data = await self._get_message()
+            data = await loop.run_in_executor(self.executor,
+                                              self._get_message)
             if len(self.subscribers) > 0 and data is not None:
                 [subscriber.submit(data) for subscriber in self.subscribers]
 
