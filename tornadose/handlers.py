@@ -1,12 +1,13 @@
 """Custom request handlers for pushing data to connected clients."""
 
+from asyncio import Queue
 import logging
-from tornado import gen
+
 from tornado.web import RequestHandler
 from tornado.websocket import WebSocketHandler, WebSocketClosedError
-from tornado.queues import Queue
 from tornado.iostream import StreamClosedError
 from tornado.log import access_log
+
 from . import stores
 
 logger = logging.getLogger('tornadose.handlers')
@@ -30,10 +31,9 @@ class BaseHandler(RequestHandler):
         self.store = store
         self.store.register(self)
 
-    @gen.coroutine
-    def submit(self, message):
+    async def submit(self, message):
         """Submit a new message to be published."""
-        yield self.messages.put(message)
+        await self.messages.put(message)
 
     def publish(self):
         """Push a message to the subscriber. This method must be
@@ -73,21 +73,19 @@ class EventSource(BaseHandler):
             "%d %s %.2fms", self.get_status(),
             self._request_summary(), request_time)
 
-    @gen.coroutine
-    def publish(self, message):
+    async def publish(self, message):
         """Pushes data to a listener."""
         try:
             self.write('data: {}\n\n'.format(message))
-            yield self.flush()
+            await self.flush()
         except StreamClosedError:
             self.finished = True
 
-    @gen.coroutine
-    def get(self, *args, **kwargs):
+    async def get(self, *args, **kwargs):
         try:
             while not self.finished:
-                message = yield self.messages.get()
-                yield self.publish(message)
+                message = await self.messages.get()
+                await self.publish(message)
         except Exception:
             pass
         finally:
@@ -101,13 +99,12 @@ class WebSocketSubscriber(BaseHandler, WebSocketHandler):
         super(WebSocketSubscriber, self).initialize(store)
         self.finished = False
 
-    @gen.coroutine
-    def open(self):
+    async def open(self):
         """Register with the publisher."""
         self.store.register(self)
         while not self.finished:
-            message = yield self.messages.get()
-            yield self.publish(message)
+            message = await self.messages.get()
+            await self.publish(message)
 
     def on_close(self):
         self._close()
@@ -116,8 +113,7 @@ class WebSocketSubscriber(BaseHandler, WebSocketHandler):
         self.store.deregister(self)
         self.finished = True
 
-    @gen.coroutine
-    def publish(self, message):
+    async def publish(self, message):
         """Push a new message to the client. The data will be
         available as a JSON object with the key ``data``.
 

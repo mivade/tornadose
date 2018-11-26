@@ -2,7 +2,6 @@
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from tornado import gen
 from tornado.concurrent import run_on_executor
 from tornado.web import RequestHandler
 from tornado.queues import Queue
@@ -101,11 +100,9 @@ class DataStore(BaseStore):
     def submit(self, message):
         self.data = str(message)
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
         while True:
-            yield gen.moment
-            yield [subscriber.submit(self.data) for subscriber in self.subscribers]
+            await [subscriber.submit(self.data) for subscriber in self.subscribers]
 
 
 class RedisStore(BaseStore):
@@ -165,10 +162,9 @@ class RedisStore(BaseStore):
             data = data['data']
         return data
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
         while not self._done.is_set():
-            data = yield self._get_message()
+            data = await self._get_message()
             if len(self.subscribers) > 0 and data is not None:
                 [subscriber.submit(data) for subscriber in self.subscribers]
 
@@ -186,13 +182,11 @@ class QueueStore(BaseStore):
         self.messages = Queue()
         self.publish()
 
-    @gen.coroutine
-    def submit(self, message):
-        yield self.messages.put(message)
+    async def submit(self, message):
+        await self.messages.put(message)
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
         while True:
-            message = yield self.messages.get()
+            message = await self.messages.get()
             if len(self.subscribers) > 0:
-                yield [subscriber.submit(message) for subscriber in self.subscribers]
+                await [subscriber.submit(message) for subscriber in self.subscribers]
