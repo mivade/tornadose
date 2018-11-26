@@ -1,11 +1,11 @@
 """Data storage for dynamic updates to clients."""
 
+from asyncio import Event, Queue
 import logging
 from concurrent.futures import ThreadPoolExecutor
+
 from tornado.concurrent import run_on_executor
 from tornado.web import RequestHandler
-from tornado.queues import Queue
-from tornado.locks import Event
 
 try:
     import redis
@@ -120,9 +120,7 @@ class RedisStore(BaseStore):
     documentation for detais.
 
     New messages are read in a background thread via a
-    :class:`concurrent.futures.ThreadPoolExecutor`. This requires
-    either Python >= 3.2 or the backported ``futures`` module to be
-    installed.
+    :class:`concurrent.futures.ThreadPoolExecutor`.
 
     __ https://redis-py.readthedocs.org/en/latest/
 
@@ -132,6 +130,7 @@ class RedisStore(BaseStore):
     def initialize(self, channel='tornadose', **kwargs):
         if redis is None:
             raise RuntimeError("The redis module is required to use RedisStore")
+
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.channel = channel
         self.messages = Queue()
