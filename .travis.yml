@@ -12,7 +12,8 @@ python:
 install:
     - pip install .
     - pip install -r requirements.txt
-    - pip install python-coveralls
-script: py.test
+    - pip install codecov
+script:
+    python -m pytest -v --cov=tornadose --flake8 tests/
 after_success:
-    - coveralls
+    - codecov
