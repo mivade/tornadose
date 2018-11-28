@@ -1,47 +1,54 @@
-"""Tests for stores."""
+import pytest
 
-import unittest
-from tornado.testing import AsyncTestCase
 from tornadose.stores import BaseStore, DataStore, QueueStore, RedisStore
 
 
-class BaseStoreTestCase(unittest.TestCase):
-    def setUp(self):
-        self.store = BaseStore()
-
-    def test_submit(self):
-        with self.assertRaises(NotImplementedError):
-            self.store.submit("data")
-
-    def test_publish(self):
-        with self.assertRaises(NotImplementedError):
-            self.store.publish()
+@pytest.fixture
+def base_store():
+    yield BaseStore()
 
 
-class TestDataStore(AsyncTestCase):
-    def setUp(self):
-        self.store = DataStore()
-        super(TestDataStore, self).setUp()
-
-    def test_data_property(self):
-        self.assertIsNone(self.store.data)
-        self.store.data = 'data'
-        self.assertEqual(self.store.data, 'data')
+@pytest.fixture
+def data_store():
+    yield DataStore()
 
 
-class TestQueueStore(AsyncTestCase):
-    def setUp(self):
-        self.store = QueueStore()
-        super(TestQueueStore, self).setUp()
-
-    def test_submit(self):
-        self.store.submit("data")
+@pytest.fixture
+def queue_store():
+    yield QueueStore()
 
 
-class TestRedisStore(AsyncTestCase):
-    def setUp(self):
-        self.store = RedisStore(channel='tornadose-test')
-        super(TestRedisStore, self).setUp()
+@pytest.fixture
+def redis_store():
+    yield RedisStore()
 
-    def test_submit(self):
-        self.store.submit('data', debug=True)
+
+@pytest.mark.asyncio
+class TestBaseStore:
+    async def test_submit(self, base_store):
+        with pytest.raises(NotImplementedError):
+            base_store.submit("data")
+
+    async def test_publish(self, base_store):
+        with pytest.raises(NotImplementedError):
+            base_store.publish()
+
+
+@pytest.mark.asyncio
+class TestDataStore:
+    async def test_data_property(self, data_store):
+        assert data_store.data is None
+        data_store.data = 'data'
+        assert data_store.data == 'data'
+
+
+@pytest.mark.asyncio
+class TestQueueStore:
+    async def test_submit(self, queue_store):
+        queue_store.submit("data")
+
+
+@pytest.mark.asyncio
+class TestRedisStore:
+    async def test_submit(self, redis_store):
+        redis_store.submit('data', debug=True)
