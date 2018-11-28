@@ -66,6 +66,7 @@ def shutdown(sig, frame):
     finish.set()
     IOLoop.instance().stop()
 
+
 if __name__ == "__main__":
     options.parse_command_line()
     signal.signal(signal.SIGINT, shutdown)

@@ -1,12 +1,11 @@
 """Data storage for dynamic updates to clients."""
 
+from asyncio import Event, Queue
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from tornado import gen
-from tornado.concurrent import run_on_executor
+
+from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler
-from tornado.queues import Queue
-from tornado.locks import Event
 
 try:
     import redis
@@ -101,11 +100,9 @@ class DataStore(BaseStore):
     def submit(self, message):
         self.data = str(message)
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
         while True:
-            yield gen.moment
-            yield [subscriber.submit(self.data) for subscriber in self.subscribers]
+            await [subscriber.submit(self.data) for subscriber in self.subscribers]
 
 
 class RedisStore(BaseStore):
@@ -123,9 +120,7 @@ class RedisStore(BaseStore):
     documentation for detais.
 
     New messages are read in a background thread via a
-    :class:`concurrent.futures.ThreadPoolExecutor`. This requires
-    either Python >= 3.2 or the backported ``futures`` module to be
-    installed.
+    :class:`concurrent.futures.ThreadPoolExecutor`.
 
     __ https://redis-py.readthedocs.org/en/latest/
 
@@ -135,6 +130,7 @@ class RedisStore(BaseStore):
     def initialize(self, channel='tornadose', **kwargs):
         if redis is None:
             raise RuntimeError("The redis module is required to use RedisStore")
+
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.channel = channel
         self.messages = Queue()
@@ -158,17 +154,18 @@ class RedisStore(BaseStore):
         self._done.set()
         self.executor.shutdown(wait=False)
 
-    @run_on_executor
     def _get_message(self):
         data = self._pubsub.get_message(timeout=1)
         if data is not None:
             data = data['data']
         return data
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
+        loop = IOLoop.current()
+
         while not self._done.is_set():
-            data = yield self._get_message()
+            data = await loop.run_in_executor(self.executor,
+                                              self._get_message)
             if len(self.subscribers) > 0 and data is not None:
                 [subscriber.submit(data) for subscriber in self.subscribers]
 
@@ -186,13 +183,11 @@ class QueueStore(BaseStore):
         self.messages = Queue()
         self.publish()
 
-    @gen.coroutine
-    def submit(self, message):
-        yield self.messages.put(message)
+    async def submit(self, message):
+        await self.messages.put(message)
 
-    @gen.coroutine
-    def publish(self):
+    async def publish(self):
         while True:
-            message = yield self.messages.get()
+            message = await self.messages.get()
             if len(self.subscribers) > 0:
-                yield [subscriber.submit(message) for subscriber in self.subscribers]
+                await [subscriber.submit(message) for subscriber in self.subscribers]

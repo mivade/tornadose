@@ -1,15 +1,16 @@
 Changelog
 =========
 
-Version 0.5
------------
+Unreleased
+----------
 
 *Upcoming*
 
 * Removed ready event from ``DataStore``.
-* Stopped testing on Python 2.6. As long as Tornado supports Python 2.6,
-  tornadose will most likely still work, but for the ease of testing
-  requirements, official support is now removed.
+* Switched to using ``async``/``await`` for coroutines instead of the
+  legacy ``@gen.coroutine`` decorator with ``yield``.
+* Upgraded to Tornado >= 5.1.
+* Removed support for legacy Python.
 
 Version 0.4.1
 -------------
