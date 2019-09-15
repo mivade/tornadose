@@ -1,26 +1,32 @@
 """Tests for the WebSocketSubscriber handlers."""
 
+import asyncio
 import json
 
 import pytest
 
 from tornado.web import Application
 from tornado.websocket import websocket_connect
-from tornado.testing import AsyncHTTPTestCase
 
 from tornadose.handlers import WebSocketSubscriber
 
 
-@pytest.mark.asyncio
-class WebSocketSubscriberTestCase(AsyncHTTPTestCase):
-    async def test_get_message(self, dummy_store):
-        app = Application([
-            (r'/', WebSocketSubscriber, dict(store=dummy_store))
-        ])
-        url = self.get_url('/').replace("http://", "ws://")
-        conn = yield websocket_connect(url)
+@pytest.fixture
+def app(dummy_store) -> Application:
+    app = Application([
+        (r'/', WebSocketSubscriber, dict(store=dummy_store))
+    ])
+    return app
+
+
+class TestWebSocketSubscriber:
+    @pytest.mark.gen_test(timeout=1)
+    async def test_get_message(self, http_server, base_url, dummy_store):
+        url = base_url.replace("http://", "ws://")
+        breakpoint()
+        conn = await websocket_connect(url)
         dummy_store.submit('test')
-        self.io_loop.call_later(0.01, dummy_store.publish)
+        asyncio.get_event_loop().call_soon(dummy_store.publish)
         msg = await conn.read_message()
         msg = json.loads(msg)
         assert msg["data"] == "test"
