@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from tornadose.stores import BaseStore, DataStore, QueueStore, RedisStore
@@ -20,7 +22,8 @@ def queue_store():
 
 @pytest.fixture
 def redis_store():
-    yield RedisStore()
+    with patch("tornadose.stores.redis.StrictRedis"):
+        yield RedisStore()
 
 
 @pytest.mark.asyncio
@@ -51,4 +54,6 @@ class TestQueueStore:
 @pytest.mark.asyncio
 class TestRedisStore:
     async def test_submit(self, redis_store):
-        redis_store.submit('data', debug=True)
+        with patch.object(redis_store._redis, "publish") as publish:
+            redis_store.submit("data", debug=True)
+            publish.assert_called_once_with(redis_store.channel, "data")
