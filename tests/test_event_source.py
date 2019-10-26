@@ -7,15 +7,20 @@ from tornado.web import Application
 from tornadose.handlers import EventSource
 
 
-@pytest.mark.asyncio
-class EventSourceTestCase:
-    def test_get(self, dummy_store):
-        handlers = [r"/", EventSource, {"store": dummy_store}]
-        app = Application(handlers)
+@pytest.fixture()
+def app(dummy_store) -> Application:
+    handlers = [r"/", EventSource, {"store": dummy_store}]
+    app = Application(handlers)
+    return app
+
+
+@pytest.mark.gen_test
+class TestEventSource:
+    def test_get(self, http_client, base_url, dummy_store):
 
         def callback(chunk):
             assert "test" in escape.native_str(chunk)
 
-        self.store.submit("test")
-        IOLoop.current().call_later(0.01, self.store.publish)
-        self.http_client.fetch(self.get_url("/"), streaming_callback=callback)
+        dummy_store.submit("test")
+        IOLoop.current().call_later(0.01, dummy_store.publish)
+        http_client.fetch(base_url, streaming_callback=callback)
