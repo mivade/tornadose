@@ -41,8 +41,8 @@ class TestBaseStore:
 class TestDataStore:
     async def test_data_property(self, data_store):
         assert data_store.data is None
-        data_store.data = 'data'
-        assert data_store.data == 'data'
+        data_store.data = "data"
+        assert data_store.data == "data"
 
 
 @pytest.mark.asyncio

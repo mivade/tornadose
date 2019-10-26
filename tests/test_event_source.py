@@ -16,6 +16,6 @@ class EventSourceTestCase:
         def callback(chunk):
             assert "test" in escape.native_str(chunk)
 
-        self.store.submit('test')
+        self.store.submit("test")
         IOLoop.current().call_later(0.01, self.store.publish)
         self.http_client.fetch(self.get_url("/"), streaming_callback=callback)

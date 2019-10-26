@@ -10,7 +10,7 @@ from tornado.log import access_log
 
 from . import stores
 
-logger = logging.getLogger('tornadose.handlers')
+logger = logging.getLogger("tornadose.handlers")
 
 
 class BaseHandler(RequestHandler):
@@ -19,6 +19,7 @@ class BaseHandler(RequestHandler):
     this class and implement the :meth:`publish` method.
 
     """
+
     def initialize(self, store):
         """Common initialization of handlers happens here. If additional
         initialization is required, this method must either be called with
@@ -40,7 +41,7 @@ class BaseHandler(RequestHandler):
         implemented by child classes.
 
         """
-        raise NotImplementedError('publish must be implemented!')
+        raise NotImplementedError("publish must be implemented!")
 
 
 class EventSource(BaseHandler):
@@ -60,23 +61,24 @@ class EventSource(BaseHandler):
     __ https://github.com/jkbrzt/httpie
 
     """
+
     def initialize(self, store):
         super(EventSource, self).initialize(store)
         self.finished = False
-        self.set_header('content-type', 'text/event-stream')
-        self.set_header('cache-control', 'no-cache')
+        self.set_header("content-type", "text/event-stream")
+        self.set_header("cache-control", "no-cache")
 
     def prepare(self):
         """Log access."""
         request_time = 1000.0 * self.request.request_time()
         access_log.info(
-            "%d %s %.2fms", self.get_status(),
-            self._request_summary(), request_time)
+            "%d %s %.2fms", self.get_status(), self._request_summary(), request_time
+        )
 
     async def publish(self, message):
         """Pushes data to a listener."""
         try:
-            self.write('data: {}\n\n'.format(message))
+            self.write("data: {}\n\n".format(message))
             await self.flush()
         except StreamClosedError:
             self.finished = True
@@ -95,6 +97,7 @@ class EventSource(BaseHandler):
 
 class WebSocketSubscriber(BaseHandler, WebSocketHandler):
     """A Websocket-based subscription handler."""
+
     def initialize(self, store):
         super(WebSocketSubscriber, self).initialize(store)
         self.finished = False

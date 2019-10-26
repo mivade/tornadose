@@ -10,9 +10,10 @@ def app():
 
 
 def test_add_eventsource_handler(app, dummy_store):
-    app.add_handlers(".*$", [(r'/stream', EventSource, dict(store=dummy_store))])
+    app.add_handlers(".*$", [(r"/stream", EventSource, dict(store=dummy_store))])
 
 
 def test_add_websocket_subscriber(app, dummy_store):
-    app.add_handlers('.*$', [
-        (r'/socket', WebSocketSubscriber, dict(store=dummy_store))])
+    app.add_handlers(
+        ".*$", [(r"/socket", WebSocketSubscriber, dict(store=dummy_store))]
+    )

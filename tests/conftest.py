@@ -6,6 +6,7 @@ from tornadose.stores import BaseStore
 
 class DummyStore(BaseStore):
     """Special store for testing handlers."""
+
     def submit(self, message):
         self.message = message
 
@@ -23,6 +24,7 @@ def dummy_store():
 def handler_class():
     class MyHandler(BaseHandler):
         """Generic subscription handler for testing stores."""
+
         def submit(self, message):
             self.message = message
 
