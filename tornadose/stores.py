@@ -1,5 +1,6 @@
 """Data storage for dynamic updates to clients."""
 
+import asyncio
 from asyncio import Event, Queue
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -102,7 +103,9 @@ class DataStore(BaseStore):
 
     async def publish(self):
         while True:
-            await [subscriber.submit(self.data) for subscriber in self.subscribers]
+            await asyncio.gather(
+                *[subscriber.submit(self.data) for subscriber in self.subscribers]
+            )
 
 
 class RedisStore(BaseStore):
@@ -191,4 +194,6 @@ class QueueStore(BaseStore):
         while True:
             message = await self.messages.get()
             if len(self.subscribers) > 0:
-                await [subscriber.submit(message) for subscriber in self.subscribers]
+                await asyncio.gather(
+                    *[subscriber.submit(message) for subscriber in self.subscribers]
+                )

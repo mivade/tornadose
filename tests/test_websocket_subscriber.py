@@ -1,6 +1,5 @@
 """Tests for the WebSocketSubscriber handlers."""
 
-import asyncio
 import json
 
 import pytest
