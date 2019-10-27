@@ -16,7 +16,6 @@ def app(dummy_store) -> Application:
 @pytest.mark.gen_test
 class TestEventSource:
     def test_get(self, io_loop, http_client, base_url, dummy_store):
-
         def callback(chunk):
             assert "test" in escape.native_str(chunk)
 

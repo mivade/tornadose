@@ -7,6 +7,9 @@ build:
 docs:
 	cd docs; make html
 
+black:
+	black tornadose/ tests/ setup.py
+
 test:
 	pytest --html=test-report.html --self-contained-html
 
