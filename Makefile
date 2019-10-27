@@ -8,7 +8,7 @@ docs:
 	cd docs; make html
 
 test:
-	pytest
+	pytest --html=test-report.html --self-contained-html
 
 clean-docs:
 	@echo "Cleaning docs"
