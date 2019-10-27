@@ -7,14 +7,15 @@ services:
     - redis-server
 language: python
 python:
-    - "3.5"
     - "3.6"
     - "3.7"
+    - "3.8"
 install:
     - pip install .
     - pip install -r requirements.txt
     - pip install codecov
 script:
-    python -m pytest -v --cov=tornadose --flake8 tests/
+    - python -m pytest -v --cov=tornadose --flake8 tests/
+    - black --check tornadose tests setup.py
 after_success:
     - codecov

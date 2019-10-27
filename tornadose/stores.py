@@ -1,5 +1,6 @@
 """Data storage for dynamic updates to clients."""
 
+import asyncio
 from asyncio import Event, Queue
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +13,7 @@ try:
 except ImportError:
     redis = None
 
-logger = logging.getLogger('tornadose.stores')
+logger = logging.getLogger("tornadose.stores")
 
 
 class BaseStore(object):
@@ -22,6 +23,7 @@ class BaseStore(object):
     ``publish`` methods.
 
     """
+
     def __init__(self, *args, **kwargs):
         self.subscribers = set()
         self.initialize(*args, **kwargs)
@@ -38,18 +40,16 @@ class BaseStore(object):
 
         """
         assert isinstance(subscriber, RequestHandler)
-        logger.debug('New subscriber')
+        logger.debug("New subscriber")
         self.subscribers.add(subscriber)
 
     def deregister(self, subscriber):
         """Stop publishing to a subscriber."""
         try:
-            logger.debug('Subscriber left')
+            logger.debug("Subscriber left")
             self.subscribers.remove(subscriber)
         except KeyError:
-            logger.debug(
-                'Error removing subscriber: ' +
-                str(subscriber))
+            logger.debug("Error removing subscriber: " + str(subscriber))
 
     def submit(self, message):
         """Add a new message to be pushed to subscribers. This method
@@ -59,7 +59,7 @@ class BaseStore(object):
         data, implement the ``publish`` method.
 
         """
-        raise NotImplementedError('submit must be implemented!')
+        raise NotImplementedError("submit must be implemented!")
 
     def publish(self):
         """Push messages to all listeners. This method must be
@@ -68,7 +68,7 @@ class BaseStore(object):
         data is available via the :meth:`submit` method.
 
         """
-        raise NotImplementedError('publish must be implemented!')
+        raise NotImplementedError("publish must be implemented!")
 
 
 class DataStore(BaseStore):
@@ -81,6 +81,7 @@ class DataStore(BaseStore):
     updates.
 
     """
+
     def initialize(self, initial_data=None):
         self.set_data(initial_data)
         self.publish()
@@ -102,7 +103,9 @@ class DataStore(BaseStore):
 
     async def publish(self):
         while True:
-            await [subscriber.submit(self.data) for subscriber in self.subscribers]
+            await asyncio.gather(
+                *[subscriber.submit(self.data) for subscriber in self.subscribers]
+            )
 
 
 class RedisStore(BaseStore):
@@ -127,7 +130,8 @@ class RedisStore(BaseStore):
     :raises ConnectionError: when the Redis host is not pingable
 
     """
-    def initialize(self, channel='tornadose', **kwargs):
+
+    def initialize(self, channel="tornadose", **kwargs):
         if redis is None:
             raise RuntimeError("The redis module is required to use RedisStore")
 
@@ -157,15 +161,14 @@ class RedisStore(BaseStore):
     def _get_message(self):
         data = self._pubsub.get_message(timeout=1)
         if data is not None:
-            data = data['data']
+            data = data["data"]
         return data
 
     async def publish(self):
         loop = IOLoop.current()
 
         while not self._done.is_set():
-            data = await loop.run_in_executor(self.executor,
-                                              self._get_message)
+            data = await loop.run_in_executor(self.executor, self._get_message)
             if len(self.subscribers) > 0 and data is not None:
                 [subscriber.submit(data) for subscriber in self.subscribers]
 
@@ -179,6 +182,7 @@ class QueueStore(BaseStore):
     processed in order.
 
     """
+
     def initialize(self):
         self.messages = Queue()
         self.publish()
@@ -190,4 +194,6 @@ class QueueStore(BaseStore):
         while True:
             message = await self.messages.get()
             if len(self.subscribers) > 0:
-                await [subscriber.submit(message) for subscriber in self.subscribers]
+                await asyncio.gather(
+                    *[subscriber.submit(message) for subscriber in self.subscribers]
+                )

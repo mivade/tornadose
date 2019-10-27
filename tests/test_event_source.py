@@ -1,29 +1,24 @@
-"""Tests for the EventSource handlers."""
+import pytest
 
-from tornado.ioloop import IOLoop
-from tornado.testing import AsyncHTTPTestCase
 from tornado import escape
 from tornado.web import Application
 
 from tornadose.handlers import EventSource
-import utilities
 
 
-class EventSourceTestCase(AsyncHTTPTestCase):
-    def setUp(self):
-        self.store = utilities.TestStore()
-        super(EventSourceTestCase, self).setUp()
+@pytest.fixture()
+def app(dummy_store) -> Application:
+    handlers = [(r"/", EventSource, {"store": dummy_store})]
+    app = Application(handlers)
+    return app
 
-    def get_app(self):
-        return Application([
-            (r'/', EventSource, dict(store=self.store))
-        ])
 
-    def test_get(self):
+@pytest.mark.gen_test
+class TestEventSource:
+    def test_get(self, io_loop, http_client, base_url, dummy_store):
         def callback(chunk):
-            print(chunk)
-            self.assertIn('test', escape.native_str(chunk))
+            assert "test" in escape.native_str(chunk)
 
-        self.store.submit('test')
-        IOLoop.current().call_later(0.01, self.store.publish)
-        self.http_client.fetch(self.get_url("/"), streaming_callback=callback)
+        dummy_store.submit("test")
+        io_loop.add_callback(dummy_store.publish)
+        http_client.fetch(base_url, streaming_callback=callback)

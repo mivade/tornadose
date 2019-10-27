@@ -2,31 +2,28 @@
 
 import json
 
+import pytest
+
 from tornado.web import Application
 from tornado.websocket import websocket_connect
-from tornado.testing import AsyncHTTPTestCase, gen_test
 
 from tornadose.handlers import WebSocketSubscriber
-import utilities
 
 
-class WebSocketSubscriberTestCase(AsyncHTTPTestCase):
-    def setUp(self):
-        self.store = utilities.TestStore()
-        super(WebSocketSubscriberTestCase, self).setUp()
+@pytest.fixture
+def app(dummy_store) -> Application:
+    app = Application([(r"/", WebSocketSubscriber, dict(store=dummy_store))])
+    return app
 
-    def get_app(self):
-        return Application([
-            (r'/', WebSocketSubscriber, dict(store=self.store))
-        ])
 
-    @gen_test
-    def test_get_message(self):
-        url = self.get_url('/').replace("http://", "ws://")
-        conn = yield websocket_connect(url)
-        self.store.submit('test')
-        self.io_loop.call_later(0.01, self.store.publish)
-        msg = yield conn.read_message()
+class TestWebSocketSubscriber:
+    @pytest.mark.gen_test
+    async def test_get_message(self, http_server, io_loop, base_url, dummy_store):
+        url = base_url.replace("http://", "ws://")
+        conn = await websocket_connect(url, connect_timeout=1)
+        dummy_store.submit("test")
+        io_loop.add_callback(dummy_store.publish)
+        msg = await conn.read_message()
         msg = json.loads(msg)
-        self.assertEqual(msg['data'], 'test')
+        assert msg["data"] == "test"
         conn.close()
