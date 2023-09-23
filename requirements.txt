@@ -7,4 +7,6 @@ pytest-flake8>=1.0.2
 pytest-html>=2.0.0,<3
 pytest-tornado>=0.8.0
 redis>=3.0.0,<4
+Sphinx
+sphinx-rtd-theme
 tornado>=6.0
